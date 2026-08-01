@@ -23,19 +23,21 @@ A lightweight web app where candidates pick a job, enter an interview room, and 
 
 The core design decision: **a deterministic engine owns control flow; the LLM only supplies content.** The interview can never stall, loop, or run long because the LLM is never asked "what should happen next?" — only "what should be said next?"
 
-```
-Browser ── Web Speech API (STT for answers, TTS for questions)
-   │
-   │  POST /api/sessions/<uuid>/answers/   {"text": "..."}
-   ▼
-Django API ──► Interview Engine (deterministic state machine)
-                  │  ONE structured-output call per turn
-                  ▼
-               OpenAI (gpt-4.1-mini)
-                  │  {signals_detected, gaps, followup_warranted,
-                  │   followup_question, next_primary_question, rationale}
-                  ▼
-               Postgres ── session state, turns, evaluation
+```mermaid
+flowchart TD
+    B["Browser<br/><i>Web Speech API — STT for answers, TTS for questions</i>"]
+    A["Django API"]
+    E["Interview Engine<br/><i>deterministic state machine —<br/>owns question count, follow-up budget, completion</i>"]
+    O["OpenAI — gpt-4.1-mini<br/><i>ONE structured-output call per turn</i>"]
+    D[("Postgres<br/><i>session state · turns · evaluation</i>")]
+
+    B -->|"POST /api/sessions/:uuid/answers/ · {text}"| A
+    A --> E
+    E -->|"transcript + current topic"| O
+    O -->|"{signals_detected, gaps, followup_warranted,<br/>followup_question, next_primary_question, rationale}"| E
+    O -.->|"any failure → pack question, rationale: 'fallback'"| E
+    E --> D
+    E -->|"{question, done, decision_panel, evaluation}"| B
 ```
 
 - **Question policy**: each role's pack has 5 topics. A session is exactly 7 interviewer questions — 5 primary + 2 follow-ups. Question 1 is templated from the pack with the job title (no LLM call). After each answer, the engine takes a follow-up if the LLM flags one as warranted (and the budget of 2 isn't spent), otherwise advances to the next primary topic; the budget is force-spent near the end so every interview gets its 2 follow-ups.
