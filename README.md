@@ -2,7 +2,7 @@
 
 A lightweight web app where candidates pick a job, enter an interview room, and complete a voice-driven interview with an AI interviewer that adapts its questions to what they say. Every session is saved with a full transcript, a live "decision panel" showing the interviewer's reasoning, and a structured final evaluation.
 
-**[Live demo](URL-PLACEHOLDER)** — free-tier hosting, allow ~1 minute for cold start after idle.
+**[Live demo](https://ai-interviewer-i6bx.onrender.com)** — free-tier hosting, allow ~1 minute for cold start after idle.
 
 ## Features
 
