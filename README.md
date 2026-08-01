@@ -9,7 +9,7 @@ A lightweight web app where candidates pick a job, enter an interview room, and 
 | Requirement | Implementation |
 |---|---|
 | ≥ 3 sample jobs | 3 seeded roles (title + description), each with its own question pack |
-| Voice input | Push-to-talk microphone via the Web Speech API, with spoken questions (speech synthesis) and a text-input fallback |
+| Voice input | Voice-only answers: push-to-talk microphone via the Web Speech API, spoken questions (speech synthesis), live transcript display |
 | ≥ 6 questions, ≥ 2 adaptive follow-ups | Exactly 7 interviewer questions per session: 5 primary + 2 follow-ups grounded in the candidate's prior answers |
 | Role-grounded | Questions come from the selected job's pack and are templated/followed up with the job title and description in context |
 | Saved session + transcript | Every Q/A turn persisted to Postgres; results page shows the full transcript |
@@ -80,7 +80,7 @@ No post-deploy configuration is needed: `ALLOWED_HOSTS` is set to `.onrender.com
 
 ## Notes & tradeoffs
 
-- **Browser support**: voice recognition uses the Web Speech API, which is best supported in **Chrome/Edge**. Other browsers (Firefox, some Safari versions) automatically get a text-input fallback so the interview is still fully usable.
+- **Browser support**: answers are voice-only by design. Voice recognition uses the Web Speech API, which requires **Chrome/Edge on desktop** with microphone access allowed — the app states this explicitly if the browser or mic is unavailable.
 - **Push-to-talk over open mic**: an explicit talk button gives a clean turn boundary (no VAD tuning, no cut-off answers, no accidental captures) — the right friction/robustness tradeoff for an interview where turns are naturally discrete.
 - **Browser STT/TTS over server-side audio**: keeps latency low and the stack simple (no audio upload, no streaming infra) at the cost of browser dependence — the fallback covers the gap.
 - **With more time**: video mode (camera + call-style layout — stretch 3), session history with replay and per-session analytics (duration, talk ratio, coverage, score trends — stretch 4), streaming TTS with a natural voice (e.g. OpenAI audio), and multi-language interviews.

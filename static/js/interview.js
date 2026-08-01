@@ -2,9 +2,10 @@
  * interview.js — interview room controller.
  *
  * Loads session state (GET /api/sessions/<id>/), renders the transcript and
- * the current question, handles voice + typed answers through one submit path
- * (POST /api/sessions/<id>/answers/), and keeps the decision panel live.
- * Speech is optional sugar: every failure path leaves the textarea working.
+ * the current question, and keeps the decision panel live. Answers are
+ * VOICE-ONLY: speech is transcribed into a read-only display and submitted
+ * (POST /api/sessions/<id>/answers/) on "Stop & submit". Without a working
+ * mic + Chrome/Edge, the interview cannot proceed and says so explicitly.
  */
 (function () {
   'use strict';
@@ -37,6 +38,7 @@
     interim: document.getElementById('interim-text'),
     answerText: document.getElementById('answer-text'),
     sendBtn: document.getElementById('send-btn'),
+    clearBtn: document.getElementById('clear-btn'),
     thinking: document.getElementById('thinking'),
     dpSignals: document.getElementById('dp-signals'),
     dpSignalsEmpty: document.getElementById('dp-signals-empty'),
@@ -52,7 +54,7 @@
     currentQuestion: null, // {index, text, meta}
     submitting: false,
     listening: false,
-    micSupported: false,
+    voiceBlocked: false,
     submitAfterStop: false,
     submitAfterStopTimer: null
   };
@@ -80,12 +82,37 @@
     );
   }
 
+  function getAnswer() {
+    return els.answerText.textContent.trim();
+  }
+
+  function setAnswer(text) {
+    els.answerText.textContent = text;
+    els.answerText.scrollTop = els.answerText.scrollHeight;
+  }
+
   function setControlsDisabled(disabled) {
-    if (state.micSupported) {
-      els.micBtn.disabled = disabled;
+    if (state.voiceBlocked) {
+      els.micBtn.disabled = true;
+      els.sendBtn.disabled = true;
+      els.clearBtn.disabled = true;
+      return;
     }
-    els.answerText.disabled = disabled;
+    els.micBtn.disabled = disabled;
     els.sendBtn.disabled = disabled;
+    els.clearBtn.disabled = disabled;
+  }
+
+  // Voice is the only input path: without it the interview cannot proceed.
+  function blockVoiceOnly(reason) {
+    state.voiceBlocked = true;
+    setControlsDisabled(true);
+    setSpeechStatus('', false);
+    showError(
+      'This interview is voice-only. ' + reason + ' ' +
+      'Please open this page in Chrome or Edge on desktop, allow microphone ' +
+      'access, and refresh.'
+    );
   }
 
   function showThinking(on) {
@@ -269,10 +296,9 @@
     if (state.submitting) {
       return;
     }
-    var text = els.answerText.value.trim();
+    var text = getAnswer();
     if (!text) {
-      setSpeechStatus('Say or type something first — the answer box is empty.', false);
-      els.answerText.focus();
+      setSpeechStatus('Nothing captured yet — click the mic and speak your answer.', false);
       return;
     }
 
@@ -317,7 +343,7 @@
           addTurn('interviewer', state.currentQuestion.text, state.currentQuestion.meta);
         }
         addTurn('candidate', text, {});
-        els.answerText.value = '';
+        setAnswer('');
         els.interim.textContent = '';
         setSpeechStatus('');
 
@@ -352,20 +378,23 @@
         setControlsDisabled(false);
         showThinking(false);
         els.roomStatus.textContent = 'In progress';
-        els.answerText.value = text; // never lose the candidate's words
+        setAnswer(text); // never lose the candidate's words
         showError(
           'Could not submit your answer (' + err.message + '). ' +
-          'Your text is preserved below — please try sending again.'
+          'Your transcript is preserved below — press "Send answer" to retry.'
         );
       });
   }
 
   els.sendBtn.addEventListener('click', submitAnswer);
-  els.answerText.addEventListener('keydown', function (event) {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-      event.preventDefault();
-      submitAnswer();
+  els.clearBtn.addEventListener('click', function () {
+    if (state.submitting) {
+      return;
     }
+    stopListening(false);
+    setAnswer('');
+    els.interim.textContent = '';
+    setSpeechStatus('Cleared — click the mic to record your answer again.', false);
   });
 
   /* ---------------- speech recognition wiring ---------------- */
@@ -373,9 +402,8 @@
   var recognizer = null;
 
   function appendFinalTranscript(text) {
-    var current = els.answerText.value;
-    els.answerText.value = current ? current.replace(/\s+$/, '') + ' ' + text : text;
-    els.answerText.scrollTop = els.answerText.scrollHeight;
+    var current = getAnswer();
+    setAnswer(current ? current + ' ' + text : text);
   }
 
   function updateMicButton() {
@@ -385,21 +413,17 @@
       : '🎤 Start answering';
   }
 
-  function speechErrorMessage(code) {
+  function speechBlockReason(code) {
     switch (code) {
       case 'not-allowed':
       case 'service-not-allowed':
-        return 'Microphone permission denied — you can type your answer instead.';
+        return 'Microphone permission was denied.';
       case 'network':
-        return 'Speech service unavailable — type instead.';
+        return 'The speech recognition service is unreachable.';
       case 'audio-capture':
-        return 'No microphone found — you can type your answer instead.';
-      case 'no-speech':
-        return "Didn't catch anything yet — try speaking a bit louder.";
-      case 'start-failed':
-        return 'Could not start voice input — you can type your answer instead.';
+        return 'No microphone was found.';
       default:
-        return 'Voice input hiccup (' + code + ') — you can always type below.';
+        return 'Voice input could not start (' + code + ').';
     }
   }
 
@@ -429,18 +453,18 @@
       state.submitAfterStopTimer = null;
     }
     els.interim.textContent = '';
-    if (els.answerText.value.trim()) {
+    if (getAnswer()) {
       submitAnswer();
     } else {
       setSpeechStatus(
-        'Nothing was captured — try again, or type your answer below.',
+        'Nothing was captured — click the mic and try speaking again.',
         false
       );
     }
   }
 
   function startListening() {
-    if (!recognizer || state.listening || state.submitting) {
+    if (!recognizer || state.listening || state.submitting || state.voiceBlocked) {
       return;
     }
     if ('speechSynthesis' in window) {
@@ -457,16 +481,10 @@
 
   function initSpeech() {
     if (!window.Speech || !window.Speech.supported) {
-      state.micSupported = false;
-      els.micBtn.hidden = true;
-      setSpeechStatus(
-        'Voice input needs Chrome or Edge — type your answer below.',
-        false
-      );
+      blockVoiceOnly('Your browser does not support speech recognition.');
       return;
     }
 
-    state.micSupported = true;
     recognizer = window.Speech.createRecognizer({
       onInterim: function (text) {
         els.interim.textContent = text;
@@ -479,7 +497,13 @@
         var fatal =
           ['not-allowed', 'service-not-allowed', 'network', 'audio-capture']
             .indexOf(code) !== -1;
-        setSpeechStatus(speechErrorMessage(code), fatal);
+        if (fatal) {
+          blockVoiceOnly(speechBlockReason(code));
+        } else if (code === 'no-speech') {
+          setSpeechStatus("Didn't catch anything yet — try speaking a bit louder.", false);
+        } else if (code === 'start-failed') {
+          setSpeechStatus('Could not start voice input — click the mic to try again.', true);
+        }
       },
       onEnd: function (unexpected) {
         var wasListeningUI = state.listening;
@@ -491,9 +515,9 @@
           finishStopAndSubmit();
           return;
         }
-        if (unexpected && wasListeningUI) {
+        if (unexpected && wasListeningUI && !state.voiceBlocked) {
           setSpeechStatus(
-            'Voice input stopped — click the mic to resume, or type below.',
+            'Voice input stopped — click the mic to resume; what you said is kept.',
             false
           );
         }

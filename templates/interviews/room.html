@@ -38,7 +38,7 @@
       </div>
 
       <div class="card answer-card">
-        <h2>Your answer</h2>
+        <h2>Your answer <span class="voice-only-tag">voice only</span></h2>
         <div class="mic-row">
           <button type="button" class="btn btn-primary mic-btn" id="mic-btn" disabled>
             🎤 Start answering
@@ -46,11 +46,12 @@
           <span class="speech-status" id="speech-status"></span>
         </div>
         <p class="interim" id="interim-text"></p>
-        <textarea id="answer-text" disabled
-          placeholder="Speak using the mic, or type your answer here. You can edit the transcribed text before sending."></textarea>
+        <div id="answer-text" class="captured-answer" aria-live="polite"
+          data-placeholder="Your transcribed answer will appear here as you speak."></div>
         <div class="answer-actions">
           <button type="button" class="btn btn-primary" id="send-btn" disabled>Send answer</button>
-          <span class="hint">Ctrl/Cmd + Enter also sends</span>
+          <button type="button" class="btn" id="clear-btn" disabled>Clear &amp; re-record</button>
+          <span class="hint">“⏹ Stop &amp; submit” sends automatically</span>
         </div>
         <div class="thinking" id="thinking" hidden>
           <span class="spinner"></span>
