@@ -21,6 +21,29 @@
 
       <div id="error-banner" class="error-banner" hidden></div>
 
+      <div class="call-strip" id="call-strip">
+        <div class="call-tile tile-interviewer" id="tile-interviewer">
+          <div class="tile-body">
+            <div class="tile-avatar-ring">
+              <div class="tile-avatar tile-avatar-ai">AI</div>
+            </div>
+          </div>
+          <span class="tile-name">AI Interviewer</span>
+          <span class="tile-speaking">Speaking…</span>
+        </div>
+
+        <div class="call-tile tile-candidate" id="tile-candidate">
+          <video class="self-video" id="self-video" muted autoplay playsinline hidden></video>
+          <div class="tile-body" id="camera-placeholder">
+            <div class="tile-avatar tile-avatar-you" aria-hidden="true">👤</div>
+            <span class="camera-status" id="camera-status">Camera off</span>
+          </div>
+          <span class="tile-name">You</span>
+          <button type="button" class="btn btn-compact camera-btn" id="camera-btn"
+            aria-pressed="false">📷 Camera on</button>
+        </div>
+      </div>
+
       <div id="transcript" class="card transcript" aria-live="polite"></div>
 
       <div class="card question-card">
@@ -100,4 +123,5 @@
 {% block scripts %}
 <script src="{% static 'js/speech.js' %}"></script>
 <script src="{% static 'js/interview.js' %}"></script>
+<script src="{% static 'js/video.js' %}"></script>
 {% endblock %}

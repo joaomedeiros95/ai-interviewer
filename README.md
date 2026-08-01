@@ -16,6 +16,8 @@ A lightweight web app where candidates pick a job, enter an interview room, and 
 | Structured evaluation | JSON evaluation on completion: `strengths`, `concerns`, `overall_score` (1–10), `summary` |
 | Stretch 1 — decision panel | Live panel in the room: skills detected (with evidence), gaps, topics covered, follow-ups used, and *why* the next question was chosen |
 | Stretch 2 — question packs | Per-role structured banks (behavioral + technical categories); the engine selects from them and generates targeted follow-ups |
+| Stretch 3 — video mode | Call-style layout: AI interviewer tile with a speaking animation synced to TTS, plus an optional mirrored camera self-view (off by default; the interview never depends on it) |
+| Stretch 4 — session history | `/sessions/` page: past interviews filterable by role, with per-session metrics (questions, follow-ups, duration, talk ratio, score) linking to full transcript replay |
 
 ## Architecture
 
@@ -83,4 +85,4 @@ No post-deploy configuration is needed: `ALLOWED_HOSTS` is set to `.onrender.com
 - **Browser support**: answers are voice-only by design. Voice recognition uses the Web Speech API, which requires **Chrome/Edge on desktop** with microphone access allowed — the app states this explicitly if the browser or mic is unavailable.
 - **Push-to-talk over open mic**: an explicit talk button gives a clean turn boundary (no VAD tuning, no cut-off answers, no accidental captures) — the right friction/robustness tradeoff for an interview where turns are naturally discrete.
 - **Browser STT/TTS over server-side audio**: keeps latency low and the stack simple (no audio upload, no streaming infra) at the cost of browser dependence — the fallback covers the gap.
-- **With more time**: video mode (camera + call-style layout — stretch 3), session history with replay and per-session analytics (duration, talk ratio, coverage, score trends — stretch 4), streaming TTS with a natural voice (e.g. OpenAI audio), and multi-language interviews.
+- **With more time**: score-trend charts across sessions, streaming TTS with a natural voice (e.g. OpenAI audio), and multi-language interviews.

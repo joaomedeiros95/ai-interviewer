@@ -584,3 +584,167 @@ details.raw-json pre {
   .question-text { font-size: 1.2rem; }
   .brand-tag { display: none; }
 }
+
+/* ---------- Video call strip ---------- */
+
+.call-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.call-tile {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: linear-gradient(150deg, #242b3d 0%, #161b28 55%, #10131d 100%);
+  border: 1px solid #2d3548;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tile-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.tile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 750;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+  color: #fff;
+  user-select: none;
+}
+
+.tile-avatar-ai { background: linear-gradient(135deg, var(--accent), #7c3aed); }
+
+.tile-avatar-you {
+  background: linear-gradient(135deg, #3b4759, #232b3a);
+  font-size: 1.6rem;
+}
+
+/* Name badge, bottom-left like real call apps */
+.tile-name {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #e6eaf3;
+  background: rgba(10, 13, 20, 0.6);
+  border-radius: 7px;
+  padding: 3px 10px;
+  pointer-events: none;
+}
+
+/* Speaking indicator: pulsing tile border + expanding rings around the
+   avatar. video.js toggles .is-speaking on the interviewer tile while
+   speechSynthesis is speaking. */
+
+.call-tile.is-speaking {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
+}
+
+.tile-avatar-ring {
+  position: relative;
+  display: inline-flex;
+  border-radius: 50%;
+}
+
+.tile-avatar-ring::before,
+.tile-avatar-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(129, 140, 248, 0.75);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.is-speaking .tile-avatar-ring::before {
+  animation: speak-ping 1.5s ease-out infinite;
+}
+
+.is-speaking .tile-avatar-ring::after {
+  animation: speak-ping 1.5s ease-out 0.75s infinite;
+}
+
+@keyframes speak-ping {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+.tile-speaking {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #c7d2fe;
+  background: rgba(79, 70, 229, 0.3);
+  border: 1px solid rgba(129, 140, 248, 0.55);
+  border-radius: 999px;
+  padding: 2px 9px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.is-speaking .tile-speaking { opacity: 1; }
+
+/* Candidate self-view (mirrored like real call apps) */
+
+.self-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  background: #000;
+}
+
+.camera-status {
+  font-size: 0.8rem;
+  color: #9aa6ba;
+  text-align: center;
+  padding: 0 16px;
+  max-width: 100%;
+}
+
+.camera-status:empty { display: none; }
+
+.camera-status.is-error { color: #fca5a5; }
+
+/* Camera toggle, bottom-right overlay of the candidate tile */
+
+.camera-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  background: rgba(10, 13, 20, 0.6);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #e6eaf3;
+}
+
+.camera-btn:hover:not(:disabled) { background: rgba(10, 13, 20, 0.82); }
+
+@media (max-width: 560px) {
+  .call-strip { grid-template-columns: minmax(0, 1fr); }
+}

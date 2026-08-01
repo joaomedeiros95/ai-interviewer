@@ -108,3 +108,14 @@ JS sends it as the `X-CSRFToken` header on every POST.
 | A (engine/API) | `interviews/engine.py`, `interviews/llm.py`, `interviews/prompts.py`, `interviews/api.py`, `interviews/management/**`, `interviews/tests.py` |
 | B (frontend) | `templates/**`, `static/**`, `interviews/views.py` (context only, keep template names) |
 | C (deploy/docs) | `Dockerfile`, `entrypoint.sh`, `render.yaml`, `.env.example`, `README.md` |
+
+## Amendment — session history page (stretch goal 4)
+
+- `GET /sessions/` — session history (template: `interviews/history.html`,
+  context: `sessions` [list of `{session, questions_asked, followups_used,
+  duration, talk_ratio, overall_score}`], `jobs`, `selected_job_id`).
+  Optional `?job=<id>` query param filters by role. Read-only page; metrics
+  are derived per request from existing models — no schema changes.
+  "Replay" links to the existing `/results/<uuid>/` page (completed) or
+  `/interview/<uuid>/` (active). This is the only route added beyond the
+  frozen foundation set.

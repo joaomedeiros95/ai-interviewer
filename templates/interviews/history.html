@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Interview History — AI Interviewer{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/history.css' %}">{% endblock %}
+{% block content %}
+<h1>Interview History</h1>
+<p class="page-intro">
+  Every interview you've run — replay a finished session's transcript and
+  evaluation, or pick an active one back up where you left off.
+</p>
+
+<div class="history-filter" aria-label="Filter by role">
+  <a class="role-chip {% if selected_job_id is None %}is-active{% endif %}" href="/sessions/">All roles</a>
+  {% for job in jobs %}
+  <a class="role-chip {% if selected_job_id == job.id %}is-active{% endif %}" href="/sessions/?job={{ job.id }}">{{ job.title }}</a>
+  {% endfor %}
+</div>
+
+{% if sessions %}
+<div class="card history-card">
+  <div class="history-table-wrap">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Started</th>
+          <th>Status</th>
+          <th>Questions</th>
+          <th>Follow&#8209;ups</th>
+          <th>Duration</th>
+          <th>Talk ratio</th>
+          <th>Score</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in sessions %}
+        <tr>
+          <td class="cell-role">{{ row.session.job.title }}</td>
+          <td class="cell-when">{{ row.session.created_at|date:"M j, Y" }} · {{ row.session.created_at|time:"H:i" }}</td>
+          <td>
+            {% if row.session.status == "completed" %}
+            <span class="status-badge status-completed">Completed</span>
+            {% else %}
+            <span class="status-badge status-active">Active</span>
+            {% endif %}
+          </td>
+          <td class="cell-metric">{{ row.questions_asked }}<span class="metric-denom">/7</span></td>
+          <td class="cell-metric">{{ row.followups_used }}<span class="metric-denom">/2</span></td>
+          <td class="cell-metric">{% if row.duration %}{{ row.duration }}{% else %}<span class="metric-empty">—</span>{% endif %}</td>
+          <td class="cell-metric">
+            {% if row.talk_ratio is not None %}you spoke {{ row.talk_ratio }}%{% else %}<span class="metric-empty">—</span>{% endif %}
+          </td>
+          <td>
+            {% if row.overall_score is not None %}
+            <span class="score-badge">{{ row.overall_score }}<span class="metric-denom">/10</span></span>
+            {% else %}
+            <span class="metric-empty">—</span>
+            {% endif %}
+          </td>
+          <td class="cell-action">
+            {% if row.session.status == "completed" %}
+            <a class="btn btn-compact" href="/results/{{ row.session.id }}/">View results</a>
+            {% else %}
+            <a class="btn btn-compact btn-primary" href="/interview/{{ row.session.id }}/">Resume</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card empty-state">
+  <h2>No interviews yet</h2>
+  <p>
+    {% if selected_job_id is not None %}
+    No sessions for this role yet — <a href="/sessions/">show all roles</a> or
+    <a href="/">pick a role to start</a>.
+    {% else %}
+    No interviews yet — <a href="/">pick a role to start</a>.
+    {% endif %}
+  </p>
+</div>
+{% endif %}
+{% endblock %}
