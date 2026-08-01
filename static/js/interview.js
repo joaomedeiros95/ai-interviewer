@@ -58,7 +58,8 @@
     voiceBlocked: false,
     submitAfterStop: false,
     submitAfterStopTimer: null,
-    ttsUnlocked: false // true once speechSynthesis has actually produced audio
+    ttsUnlocked: false, // true once speechSynthesis has actually produced audio
+    ttsToken: 0 // identifies the latest question utterance (stale onend guards)
   };
 
   /* ---------------- generic helpers ---------------- */
@@ -128,11 +129,36 @@
 
   /* ---------------- text-to-speech ---------------- */
 
+  // Hands-free flow: once a question has been read aloud in full, open the
+  // mic automatically. Only after a NATURAL end of the latest utterance
+  // (cancelled speech fires onerror, and stale utterances fail the token
+  // check), and only while the read-aloud toggle is on and nothing else is
+  // going on. The small delay keeps the mic from catching the TTS tail.
+  function scheduleAutoListen(token) {
+    window.setTimeout(function () {
+      if (token !== state.ttsToken) {
+        return; // a newer question started speaking meanwhile
+      }
+      if (
+        !els.ttsToggle.checked ||
+        state.listening ||
+        state.submitting ||
+        state.voiceBlocked ||
+        !state.currentQuestion
+      ) {
+        return;
+      }
+      startListening();
+    }, 450);
+  }
+
   function speakQuestion(text, force) {
     if (!('speechSynthesis' in window)) {
       return;
     }
     try {
+      state.ttsToken += 1;
+      var token = state.ttsToken;
       window.speechSynthesis.cancel(); // never overlap questions
       if ((!els.ttsToggle.checked && !force) || !text) {
         return;
@@ -141,6 +167,9 @@
       utterance.lang = 'en-US';
       utterance.onstart = function () {
         state.ttsUnlocked = true;
+      };
+      utterance.onend = function () {
+        scheduleAutoListen(token);
       };
       window.speechSynthesis.speak(utterance);
     } catch (e) {

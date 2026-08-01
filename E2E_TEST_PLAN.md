@@ -42,7 +42,9 @@ caching" without saying how) to invite a follow-up.
 
 | # | Step | Expected |
 |---|---|---|
-| 3.1 | Click **🎤 Start answering** | Button turns red/pulsing "⏹ Stop & submit"; status shows "Listening…"; browser may prompt for mic permission → **Allow** |
+| 3.0 | With "Read questions aloud" ticked, wait for the question to finish being read | The mic starts **automatically** ~half a second after the voice stops: button turns red/pulsing "⏹ Stop & submit", status shows "Listening…"; browser may prompt for mic permission → **Allow** |
+| 3.1 | (When the mic didn't auto-start — e.g. read-aloud toggle off) click **🎤 Start answering** | Same listening state as 3.0, started manually |
+| 3.1b | Untick "Read questions aloud", replay a question, let it finish | Mic does **not** auto-start (auto-start only applies while the toggle is ticked). Re-tick afterwards |
 | 3.2 | Speak your answer | Interim (italic) text appears live while speaking; finalized text accumulates in the read-only answer box; there is **no way to type or edit** the text (voice-only) |
 | 3.3 | Click **⏹ Stop & submit** | Answer submits automatically; "Interviewer is thinking…" spinner; then the next question appears, is read aloud, and your Q/A pair moves into the transcript above |
 | 3.4 | After each answer, check the decision panel | Skills detected (with evidence quoting your words), gaps, topic chips fill in, follow-ups counter updates, "Why this question" shows a rationale that references your answer |
