@@ -1,5 +1,91 @@
 {% extends "base.html" %}
+{% block title %}Results — {{ session.job.title }}{% endblock %}
 {% block content %}
-<h1>Results — {{ session.job.title }}</h1>
-<p>Stub. Frontend agent will replace this.</p>
+<div class="results-head">
+  <div>
+    <h1>Interview results — {{ session.job.title }}</h1>
+    <p class="muted" style="margin:0">
+      {% if session.status == "completed" %}Completed interview{% else %}Interview still in progress{% endif %}
+      · {{ turns|length }} turn{{ turns|length|pluralize }}
+    </p>
+  </div>
+  <a class="btn" href="/">New interview</a>
+</div>
+
+<div class="results-grid">
+
+  {% if session.status != "completed" %}
+  <div class="error-banner">
+    This interview isn't finished yet.
+    <a href="/interview/{{ session.id }}/">Return to the interview room</a> to continue.
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <h2>Transcript</h2>
+    {% if turns %}
+    <div class="chat">
+      {% for turn in turns %}
+      <div class="turn {% if turn.role == 'interviewer' %}turn-interviewer{% else %}turn-candidate{% endif %}">
+        <div class="turn-role">
+          {% if turn.role == "interviewer" %}
+            Interviewer
+            {% if turn.meta.kind == "followup" %}<span class="badge-followup">follow-up</span>{% endif %}
+          {% else %}
+            You
+          {% endif %}
+        </div>
+        <div class="turn-text">{{ turn.text }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No turns recorded for this session.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Evaluation</h2>
+    {% if evaluation %}
+    <div class="eval-grid">
+      <div class="score-box">
+        <div>
+          <span class="score-number">{{ evaluation.overall_score }}</span><span class="score-denominator">/10</span>
+        </div>
+        <div class="score-caption">Overall score</div>
+      </div>
+      <div class="eval-lists">
+        <div class="strengths">
+          <h3>Strengths</h3>
+          {% if evaluation.strengths %}
+          <ul>
+            {% for item in evaluation.strengths %}<li>{{ item }}</li>{% endfor %}
+          </ul>
+          {% else %}<p class="muted">None listed.</p>{% endif %}
+        </div>
+        <div class="concerns">
+          <h3>Concerns</h3>
+          {% if evaluation.concerns %}
+          <ul>
+            {% for item in evaluation.concerns %}<li>{{ item }}</li>{% endfor %}
+          </ul>
+          {% else %}<p class="muted">None listed.</p>{% endif %}
+        </div>
+      </div>
+      {% if evaluation.summary %}
+      <p class="eval-summary">{{ evaluation.summary }}</p>
+      {% endif %}
+    </div>
+    <details class="raw-json">
+      <summary>Raw evaluation JSON</summary>
+      <pre>{{ evaluation_json }}</pre>
+    </details>
+    {% else %}
+    <p class="muted">
+      No evaluation yet — it's generated after the seventh answer is submitted.
+    </p>
+    {% endif %}
+  </div>
+
+</div>
 {% endblock %}

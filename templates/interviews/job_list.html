@@ -1,11 +1,86 @@
 {% extends "base.html" %}
+{% block title %}Open Roles — AI Interviewer{% endblock %}
 {% block content %}
 <h1>Open Roles</h1>
-<ul>
+<p class="page-intro">
+  Pick a role and practice a realistic, adaptive interview — an AI interviewer
+  asks questions out loud, listens to your spoken answers, and probes deeper
+  based on what you say.
+</p>
+
+{% if jobs %}
+<div class="job-grid">
   {% for job in jobs %}
-  <li>{{ job.title }} — {{ job.description|truncatewords:20 }}</li>
-  {% empty %}
-  <li>No jobs yet.</li>
+  <div class="card job-card">
+    <h2>{{ job.title }}</h2>
+    <p>{{ job.description|truncatewords:40 }}</p>
+    <div class="job-actions">
+      <button class="btn btn-primary start-btn" data-job-id="{{ job.id }}">
+        Start Interview
+      </button>
+      <p class="job-error" hidden></p>
+    </div>
+  </div>
   {% endfor %}
-</ul>
+</div>
+{% else %}
+<div class="card empty-state">
+  <h2>No roles yet</h2>
+  <p>Jobs haven't been seeded. Check back in a moment.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+  var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  var csrfToken = csrfMeta ? csrfMeta.content : '';
+
+  document.querySelectorAll('.start-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var jobId = btn.dataset.jobId;
+      var errorEl = btn.parentElement.querySelector('.job-error');
+      errorEl.hidden = true;
+      btn.disabled = true;
+      btn.textContent = 'Starting…';
+
+      fetch('/api/jobs/' + jobId + '/sessions/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        }
+      })
+        .then(function (res) {
+          if (res.status !== 201) {
+            return res.json().then(
+              function (body) {
+                throw new Error((body && body.error) || 'HTTP ' + res.status);
+              },
+              function () {
+                throw new Error('HTTP ' + res.status);
+              }
+            );
+          }
+          return res.json();
+        })
+        .then(function (data) {
+          if (!data || !data.session_id) {
+            throw new Error('Unexpected response from server.');
+          }
+          window.location.href = '/interview/' + data.session_id + '/';
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          btn.textContent = 'Start Interview';
+          errorEl.textContent =
+            'Could not start the interview (' + err.message + '). Please try again.';
+          errorEl.hidden = false;
+        });
+    });
+  });
+})();
+</script>
 {% endblock %}

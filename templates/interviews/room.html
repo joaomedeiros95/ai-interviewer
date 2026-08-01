@@ -1,5 +1,101 @@
 {% extends "base.html" %}
+{% load static %}
+{% block title %}Interview — {{ session.job.title }}{% endblock %}
 {% block content %}
-<h1>Interview Room — {{ session.job.title }}</h1>
-<p>Stub. Frontend agent will replace this.</p>
+<div id="room" data-session-id="{{ session.id }}">
+  <div class="room-grid">
+
+    <section class="room-main">
+      <div>
+        <h1>{{ session.job.title }} interview</h1>
+        <div class="progress-head">
+          <span class="progress-label">
+            Question <span id="q-number">–</span> of <span id="q-total">7</span>
+          </span>
+          <span class="muted" id="room-status">Loading session…</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <div id="error-banner" class="error-banner" hidden></div>
+
+      <div id="transcript" class="card transcript" aria-live="polite"></div>
+
+      <div class="card question-card">
+        <div class="question-kicker">
+          <span>Current question</span>
+          <span id="q-followup-badge" class="badge-followup" hidden>Follow-up</span>
+        </div>
+        <p class="question-text" id="question-text">Loading your first question…</p>
+        <div class="tts-row">
+          <label>
+            <input type="checkbox" id="tts-toggle" checked>
+            <span>🔊 Read questions aloud</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card answer-card">
+        <h2>Your answer</h2>
+        <div class="mic-row">
+          <button type="button" class="btn btn-primary mic-btn" id="mic-btn" disabled>
+            🎤 Start answering
+          </button>
+          <span class="speech-status" id="speech-status"></span>
+        </div>
+        <p class="interim" id="interim-text"></p>
+        <textarea id="answer-text" disabled
+          placeholder="Speak using the mic, or type your answer here. You can edit the transcribed text before sending."></textarea>
+        <div class="answer-actions">
+          <button type="button" class="btn btn-primary" id="send-btn" disabled>Send answer</button>
+          <span class="hint">Ctrl/Cmd + Enter also sends</span>
+        </div>
+        <div class="thinking" id="thinking" hidden>
+          <span class="spinner"></span>
+          <span>Interviewer is thinking…</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card decision-panel">
+      <h2>Interviewer's Decision Panel</h2>
+      <p class="panel-sub">Live view of what the interviewer is picking up.</p>
+
+      <div class="dp-section">
+        <div class="dp-title">Skills detected</div>
+        <ul class="dp-list" id="dp-signals"></ul>
+        <div class="dp-empty" id="dp-signals-empty">none yet</div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-title">Gaps</div>
+        <ul class="dp-list" id="dp-gaps"></ul>
+        <div class="dp-empty" id="dp-gaps-empty">none yet</div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-title">Topics covered</div>
+        <div class="chip-row" id="dp-topics"></div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-title">Follow-ups used</div>
+        <div class="dp-counter"><span id="dp-followups">0</span> / 2</div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-title">Why this question</div>
+        <div class="dp-rationale" id="dp-rationale">—</div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/speech.js' %}"></script>
+<script src="{% static 'js/interview.js' %}"></script>
 {% endblock %}

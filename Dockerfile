@@ -10,8 +10,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN python manage.py collectstatic --noinput
+RUN python manage.py collectstatic --noinput \
+    && chmod +x /app/entrypoint.sh \
+    && useradd --create-home appuser \
+    && chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 
-CMD ["gunicorn", "config.wsgi", "-b", "0.0.0.0:8000", "-w", "2", "--worker-class", "gthread", "--threads", "8"]
+CMD ["/app/entrypoint.sh"]
