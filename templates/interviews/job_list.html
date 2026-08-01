@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Open Roles</h1>
+<ul>
+  {% for job in jobs %}
+  <li>{{ job.title }} — {{ job.description|truncatewords:20 }}</li>
+  {% empty %}
+  <li>No jobs yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

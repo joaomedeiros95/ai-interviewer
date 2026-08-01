@@ -1,0 +1,10 @@
+.git
+.env
+.venv
+venv
+__pycache__
+*.pyc
+staticfiles
+.DS_Store
+README.md
+TASK.md
