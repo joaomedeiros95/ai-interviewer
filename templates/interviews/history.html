@@ -48,8 +48,8 @@
           <td class="cell-metric">{{ row.questions_asked }}<span class="metric-denom">/7</span></td>
           <td class="cell-metric">{{ row.followups_used }}<span class="metric-denom">/2</span></td>
           <td class="cell-metric">{% if row.duration %}{{ row.duration }}{% else %}<span class="metric-empty">—</span>{% endif %}</td>
-          <td class="cell-metric">
-            {% if row.talk_ratio is not None %}you spoke {{ row.talk_ratio }}%{% else %}<span class="metric-empty">—</span>{% endif %}
+          <td class="cell-metric" title="Share of the words spoken by you">
+            {% if row.talk_ratio is not None %}{{ row.talk_ratio }}%{% else %}<span class="metric-empty">—</span>{% endif %}
           </td>
           <td>
             {% if row.overall_score is not None %}
@@ -60,7 +60,7 @@
           </td>
           <td class="cell-action">
             {% if row.session.status == "completed" %}
-            <a class="btn btn-compact" href="/results/{{ row.session.id }}/">View results</a>
+            <a class="btn btn-compact" href="/results/{{ row.session.id }}/">Results</a>
             {% else %}
             <a class="btn btn-compact btn-primary" href="/interview/{{ row.session.id }}/">Resume</a>
             {% endif %}

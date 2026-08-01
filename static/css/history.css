@@ -53,17 +53,23 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-  padding: 10px 14px;
+  padding: 10px 10px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
 .history-table td {
-  padding: 12px 14px;
+  padding: 12px 10px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
   white-space: nowrap;
 }
+
+.history-table th:first-child,
+.history-table td:first-child { padding-left: 18px; }
+
+.history-table th:last-child,
+.history-table td:last-child { padding-right: 18px; }
 
 .history-table tbody tr:last-child td { border-bottom: none; }
 
