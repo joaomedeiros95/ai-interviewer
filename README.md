@@ -43,6 +43,8 @@ Django API ──► Interview Engine (deterministic state machine)
 - **Fallback resilience**: if the LLM call fails (timeout, quota, bad key), the engine serves the next pack question verbatim with `rationale: "fallback"`. The interview always completes and the transcript is always saved.
 - **Decision panel**: the same per-turn structured output (signals, gaps, coverage, rationale) is returned to the client and rendered live — the deterministic state *is* the UI.
 
+Deeper diagrams live in [`docs/`](docs/): [architecture](docs/architecture.md), [application flow](docs/application-flow.md), [database model](docs/database-model.md).
+
 ## Tech stack
 
 - **Backend**: Django 6 / Python 3.14, PostgreSQL, Gunicorn (gthread) + WhiteNoise
