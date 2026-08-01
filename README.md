@@ -80,6 +80,11 @@ No post-deploy configuration is needed: `ALLOWED_HOSTS` is set to `.onrender.com
 
 **Free-tier notes**: the web service spins down after ~15 minutes of inactivity (first request after idle takes ~1 minute), and Render's free Postgres instance expires after its free period — fine for reviewing this take-home.
 
+## Testing
+
+Automated engine/API tests: `docker compose exec web python manage.py test`.
+Manual voice/camera/browser verification: see [E2E_TEST_PLAN.md](E2E_TEST_PLAN.md).
+
 ## Notes & tradeoffs
 
 - **Browser support**: answers are voice-only by design. Voice recognition uses the Web Speech API, which requires **Chrome/Edge on desktop** with microphone access allowed — the app states this explicitly if the browser or mic is unavailable.
