@@ -21,6 +21,18 @@
       </div>
     </div>
   </header>
+  <div class="browser-warning" id="browser-warning" hidden>
+    <div class="container">
+      ⚠️ Interviews here are voice-only, and your browser doesn't support speech
+      recognition. Please use <strong>Google Chrome</strong> or
+      <strong>Microsoft Edge</strong> on desktop.
+    </div>
+  </div>
+  <script>
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+      document.getElementById('browser-warning').hidden = false;
+    }
+  </script>
   <main class="container">{% block content %}{% endblock %}</main>
   {% block scripts %}{% endblock %}
 </body>

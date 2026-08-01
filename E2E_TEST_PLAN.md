@@ -92,7 +92,8 @@ caching" without saying how) to invite a follow-up.
 | # | Step | Expected |
 |---|---|---|
 | 8.1 | New session in Chrome; when the mic permission prompt appears, click **Block** (or pre-block via the padlock icon) | Blocking banner: interview is voice-only, use Chrome/Edge, allow microphone, refresh. Mic/Send/Clear controls disabled; no way to proceed by typing |
-| 8.2 | Open a room URL in **Firefox or Safari** | Same voice-only blocking banner (no speech recognition support); page otherwise renders without errors |
+| 8.2 | Open the **home page** in **Firefox or Safari** | An amber warning bar appears under the header on every page: voice-only, use Chrome or Edge on desktop |
+| 8.2b | In that browser, open a room URL | Warning bar plus the room's blocking banner; controls disabled; page otherwise renders without errors |
 | 8.3 | (Optional) Toggle airplane mode / kill network, submit an answer | Readable error banner; your transcript is preserved; **Send answer** retries successfully once back online |
 
 ## 9. Session history
