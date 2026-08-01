@@ -94,4 +94,12 @@ Manual voice/camera/browser verification: see [E2E_TEST_PLAN.md](E2E_TEST_PLAN.m
 - **Browser support**: answers are voice-only by design. Voice recognition uses the Web Speech API, which requires **Chrome/Edge on desktop** with microphone access allowed — the app states this explicitly if the browser or mic is unavailable.
 - **Push-to-talk over open mic**: an explicit talk button gives a clean turn boundary (no VAD tuning, no cut-off answers, no accidental captures) — the right friction/robustness tradeoff for an interview where turns are naturally discrete.
 - **Browser STT/TTS over server-side audio**: keeps latency low and the stack simple (no audio upload, no streaming infra) at the cost of browser dependence — the fallback covers the gap.
-- **With more time**: score-trend charts across sessions, streaming TTS with a natural voice (e.g. OpenAI audio), and multi-language interviews.
+
+## Future improvements
+
+- **Fully hands-free conversation** — remove the last button. Today the mic auto-opens after each question is read; the next step is silence-based endpointing so the answer auto-submits after ~2s of sustained silence (voice-activity detection via the Web Audio API on the mic stream, since `SpeechRecognition` alone can't distinguish "thinking pause" from "done"). The interview then flows like a real call: question → answer → next question, zero clicks. Needs careful tuning — submitting mid-thought is worse than one extra click — so it would ship with the silence threshold user-adjustable and the stop button kept as an override.
+- **Barge-in** — let the candidate start talking over the question to interrupt TTS (cancel speech, open the mic), like interrupting a human interviewer.
+- **Natural streaming voice** — replace browser `speechSynthesis` with a streaming TTS API (e.g. OpenAI audio) for a far more natural interviewer voice, streamed sentence-by-sentence to keep latency low.
+- **Server-side STT (Whisper)** — record audio in the browser and transcribe server-side to lift the Chrome/Edge-only restriction and improve transcription quality on accents and technical vocabulary.
+- **Analytics over history** — score trends per role across sessions, topic-coverage heatmaps, and answer-length/talk-ratio evolution, building on the metrics the history page already computes.
+- **Accounts & multi-language** — per-user session history behind auth, and interviews conducted in the candidate's language (both STT/TTS and prompts are language-parameterizable).
