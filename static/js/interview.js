@@ -33,6 +33,7 @@
     questionText: document.getElementById('question-text'),
     followupBadge: document.getElementById('q-followup-badge'),
     ttsToggle: document.getElementById('tts-toggle'),
+    replayBtn: document.getElementById('replay-btn'),
     micBtn: document.getElementById('mic-btn'),
     speechStatus: document.getElementById('speech-status'),
     interim: document.getElementById('interim-text'),
@@ -56,7 +57,8 @@
     listening: false,
     voiceBlocked: false,
     submitAfterStop: false,
-    submitAfterStopTimer: null
+    submitAfterStopTimer: null,
+    ttsUnlocked: false // true once speechSynthesis has actually produced audio
   };
 
   /* ---------------- generic helpers ---------------- */
@@ -126,17 +128,20 @@
 
   /* ---------------- text-to-speech ---------------- */
 
-  function speakQuestion(text) {
+  function speakQuestion(text, force) {
     if (!('speechSynthesis' in window)) {
       return;
     }
     try {
       window.speechSynthesis.cancel(); // never overlap questions
-      if (!els.ttsToggle.checked || !text) {
+      if ((!els.ttsToggle.checked && !force) || !text) {
         return;
       }
       var utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'en-US';
+      utterance.onstart = function () {
+        state.ttsUnlocked = true;
+      };
       window.speechSynthesis.speak(utterance);
     } catch (e) {
       // TTS is best-effort only
@@ -146,6 +151,28 @@
   els.ttsToggle.addEventListener('change', function () {
     if (!els.ttsToggle.checked && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+    }
+  });
+
+  els.replayBtn.addEventListener('click', function () {
+    if (state.currentQuestion) {
+      speakQuestion(state.currentQuestion.text, true); // explicit ask overrides the toggle
+    }
+  });
+
+  // Chrome drops speechSynthesis.speak() issued before the user interacts with
+  // the page, so the on-load attempt for question 1 can be silently blocked.
+  // The first gesture inside the room retries it — except on the mic button,
+  // where speaking over the candidate's recording would be worse than silence.
+  document.addEventListener('pointerdown', function (event) {
+    if (state.ttsUnlocked || state.listening || state.submitting) {
+      return;
+    }
+    if (event.target.closest && event.target.closest('#mic-btn')) {
+      return;
+    }
+    if (els.ttsToggle.checked && state.currentQuestion) {
+      speakQuestion(state.currentQuestion.text);
     }
   });
 
@@ -583,8 +610,9 @@
 
     els.roomStatus.textContent = 'In progress';
     setControlsDisabled(false);
-    // Note: we deliberately don't auto-speak on load — browsers block
-    // speechSynthesis before a user gesture anyway.
+    // Attempt to speak the current question on load. Chrome blocks this until
+    // the user interacts with the page — the pointerdown fallback covers that.
+    speakQuestion(current.text);
   }
 
   function init() {

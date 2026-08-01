@@ -293,8 +293,18 @@ a { color: var(--accent); }
   letter-spacing: -0.01em;
 }
 
-.tts-row { margin-top: 14px; font-size: 0.88rem; color: var(--text-muted); }
+.tts-row {
+  margin-top: 14px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 .tts-row label { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
+
+.btn-compact { padding: 5px 12px; font-size: 0.82rem; font-weight: 600; }
 
 /* Answer controls */
 
